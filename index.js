@@ -11,7 +11,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 // app.use(createLogMiddleware)
-app.use('/api/v1', router)
+app.use('/', router)
 // Обработка ошибок, последний Middleware
 app.use(errorHandler)
 
