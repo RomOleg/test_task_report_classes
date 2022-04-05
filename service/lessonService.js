@@ -51,6 +51,52 @@ class LessonService {
 
         return lesson;
     }
+
+    getDatesRange(firstDate, days) {
+        const dates = [];
+        const dateStart = moment(); //.format('YYYY-MM-DD');
+        firstDate = moment(firstDate);
+        console.log(firstDate);
+        console.log(dateStart.add(3, 'day'));
+        console.log(firstDate.format('YYYY-MM-DD') <= dateStart.format('YYYY-MM-DD'));
+        while (firstDate.format('YYYY-MM-DD') <= dateStart.format('YYYY-MM-DD')) {
+            firstDate.add(1, 'year');
+            console.log(firstDate);
+        }   
+    }
+
+    rangeStudent(studentCount = '', next) {
+        try {
+            if(!studentCount.match(/(^\d)|(,\d)/gm)) {
+                next(ApiError.badRequest('studentCount должен содержать только число или числа через запятую без пробелов')); 
+            }
+            if (studentCount.length === 1) {
+                return [+studentCount];
+            } else {
+                let result = [];
+                studentCount = JSON.parse(`[${studentCount}]`);
+                let min = Math.min.apply(null, studentCount);
+                let max = Math.max.apply(null, studentCount);
+                for (let index = min; index <= max; index++) {
+                    result.push(index);
+                }
+                return result;
+            }
+        } catch (error) {
+            next(ApiError.badRequest('studentCount должен сожержать только числа'))
+        }
+    }
+
+    checkTeacherInterger(teacherIds = [], next) {
+        try {
+            if( !Array.isArray(teacherIds) || !JSON.parse(`[${teacherIds}]`)) {
+                throw new Error()
+            }
+        } catch (error) {
+            next(ApiError.badRequest('teacherIds должен содержать только число или числа через запятую без пробелов в виде массива')); 
+        }
+    }
+
     /**
      * 
      * @param {*} lesson 
@@ -84,27 +130,6 @@ class LessonService {
         }).filter(obj => obj !== null)
     }
 
-    rangeStudent(studentCount = '', next) {
-        try {
-            if(!studentCount.match(/(^\d)|(,\d)/gm)) {
-                next(ApiError.badRequest('studentCount должен содержать только число или числа через запятую без пробелов')); 
-            }
-            if (studentCount.length === 1) {
-                return [+studentCount];
-            } else {
-                let result = [];
-                studentCount = JSON.parse(`[${studentCount}]`);
-                let min = Math.min.apply(null, studentCount);
-                let max = Math.max.apply(null, studentCount);
-                for (let index = min; index <= max; index++) {
-                    result.push(index);
-                }
-                return result;
-            }
-        } catch (error) {
-            next(ApiError.badRequest('studentCount должен сожержать только числа'))
-        }
-    }
 }
 
 module.exports = new LessonService();
