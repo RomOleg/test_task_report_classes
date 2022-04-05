@@ -5,6 +5,16 @@ class TeacherService {
         const teacher = await Teacher.create({ name });
         return teacher;
     }
+
+    async getTeachers(teacherIds) {
+        const teachers = await Teacher.findAll({
+          where: {
+            id: teacherIds
+          }
+        });
+        
+        return teachers;
+      }
 }
 
 module.exports = new TeacherService();

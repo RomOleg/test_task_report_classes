@@ -10,7 +10,8 @@ const Lesson = sequelize.define('lessons', {
         type: DataTypes.STRING
     },
     status: {
-        type: DataTypes.BOOLEAN
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
 })
 

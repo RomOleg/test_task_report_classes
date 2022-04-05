@@ -11,6 +11,7 @@ class TeacherController {
       next(ApiError.internal(error.message));
     }
   }
+
 }
 
 module.exports = new TeacherController();
