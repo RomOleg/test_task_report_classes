@@ -8,7 +8,7 @@ const Student = require('../models/students');
 const Teacher = require('../models/teachers');
 
 class LessonService {
-    async create(date, title, status) {
+    async create(date, title, status = false) {
         const lesson = await Lesson.create({ date, title, status });
         return lesson;
     }
@@ -52,16 +52,18 @@ class LessonService {
         return lesson;
     }
 
-    getDatesRange(firstDate, days) {
+    getDatesRange(lessonsCount, firstDate, days) {
         const dates = [];
-        const dateStart = moment(); //.format('YYYY-MM-DD');
+        const maxLessons = 50 * days.length;
         firstDate = moment(firstDate);
-        console.log(firstDate);
-        console.log(dateStart.add(3, 'day'));
-        console.log(firstDate.format('YYYY-MM-DD') <= dateStart.format('YYYY-MM-DD'));
-        while (firstDate.format('YYYY-MM-DD') <= dateStart.format('YYYY-MM-DD')) {
-            firstDate.add(1, 'year');
-            console.log(firstDate);
+        while (true) {
+            days.forEach(el => {
+                if (firstDate.days() === el) {
+                    dates.push(firstDate.format('YYYY-MM-DD'));
+                }
+            })
+            firstDate = firstDate.add(1, 'day');
+            if (maxLessons <= dates.length || dates.length === lessonsCount) return dates;
         }   
     }
 

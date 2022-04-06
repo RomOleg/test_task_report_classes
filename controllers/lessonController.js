@@ -2,13 +2,14 @@ const moment = require('moment');
 const ApiError = require("../error/ApiError");
 const teacherService = require("../service/teacherService");
 const lessonService = require("../service/lessonService");
+const lessonTeacherService = require('../service/lessonTeacherService');
 
 class StudentController {
   async create(req, res, next) {
     try {
       const { title, days, teacherIds, firstDate, lessonsCount, lastDate } = req.body;
 
-      // if (lessonsCount && lastDate) return next(ApiError.badRequest('Должен использоваться только один параметр, либо lastDate, либо lessonsCount'));
+      if (lessonsCount && lastDate) return next(ApiError.badRequest('Должен использоваться только один параметр, либо lastDate, либо lessonsCount'));
 
       if (!title) return next(ApiError.badRequest('Обязательный параметр title не указан'));
       if (!days) return next(ApiError.badRequest('Обязательный параметр days не указан'));
@@ -19,21 +20,35 @@ class StudentController {
       lessonService.checkTeacherInterger(teacherIds, next);
 
       // check teacher
-      // const teachers = await teacherService.getTeachers(teacherIds);
+      const teachers = await teacherService.getTeachers(teacherIds);
 
-      // if (teachers.length !== [...new Set(teacherIds)].length) {
-      //   return next(ApiError.badRequest('Вы указалали идетификатор учителя, которого не существует'));
-      // }
+      if (teachers.length !== [...new Set(teacherIds)].length) {
+        return next(ApiError.badRequest('Вы указалали идетификатор учителя, которого не существует'));
+      }
+
+      let lessons = null;
+
       if (lessonsCount && firstDate) {
-        const dates = lessonService.getDatesRange(firstDate, days);  
-        // const lessons = await Promise.all();
+        const dates = lessonService.getDatesRange(lessonsCount, firstDate, days);  
+        lessons = await Promise.all(
+          dates.map(async date => {
+            const lesson = await lessonService.create(date, title)
+            return lesson.id;
+          })
+        );
+        // console.log(lessons);
+        // await Promise.all(
+          lessons.forEach(lesson => {
+            teacherIds.forEach(async teacherId => await lessonTeacherService.create(lesson, teacherId))
+          })
+        // )
       } else if (lastDate && firstDate) {
 
       }
 
       // const lesson = await lessonService.create(date, title, status);
 
-      return res.json('done')
+      return res.json({count: lessons.length, lessons})
     } catch (error) {
       return next(ApiError.internal(error.message));
     }
