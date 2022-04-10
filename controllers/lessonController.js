@@ -19,7 +19,7 @@ class StudentController {
 
       lessonService.checkTeacherInterger(teacherIds, next);
 
-      // check teacher
+      // check teacher 
       const teachers = await teacherService.getTeachers(teacherIds);
 
       if (teachers.length !== [...new Set(teacherIds)].length) {
