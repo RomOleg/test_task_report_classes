@@ -52,10 +52,12 @@ class LessonService {
         return lesson;
     }
 
-    getDatesRange(lessonsCount, firstDate, days) {
+    getDatesRangeByCountLessons(lessonsCount, firstDate, days) {
         const dates = [];
         const maxLessons = 50 * days.length;
         firstDate = moment(firstDate);
+        if (!firstDate.isValid()) throw new Error('firstDate not valid');
+
         while (true) {
             days.forEach(el => {
                 if (firstDate.days() === el) {
@@ -64,6 +66,25 @@ class LessonService {
             })
             firstDate = firstDate.add(1, 'day');
             if (maxLessons <= dates.length || dates.length === lessonsCount) return dates;
+        }   
+    }
+
+    getDatesRange(firstDate, lastDate, days) {
+        const dates = [];
+        const maxLessons = 50 * days.length;
+        firstDate = moment(firstDate);
+        lastDate = moment(lastDate);
+        if (!firstDate.isValid()) throw new Error('firstDate not valid');
+        if (!lastDate.isValid()) throw new Error('lastDate not valid');
+
+        while (true) {
+            days.forEach(el => {
+                if (firstDate.days() === el) {
+                    dates.push(firstDate.format('YYYY-MM-DD'));
+                }
+            })
+            firstDate = firstDate.add(1, 'day');
+            if (maxLessons <= dates.length || firstDate > lastDate) return dates;
         }   
     }
 

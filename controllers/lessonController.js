@@ -14,8 +14,8 @@ class StudentController {
       if (!title) return next(ApiError.badRequest('Обязательный параметр title не указан'));
       if (!days) return next(ApiError.badRequest('Обязательный параметр days не указан'));
 
-      if (!(lessonsCount && firstDate)) return next(ApiError.badRequest('Обязательный параметр lessonsCount или firstDate не указан'));
-      if (!(lastDate && firstDate)) return next(ApiError.badRequest('Обязательный параметр lastDate или firstDate не указан'));
+      if (lessonsCount && !(lessonsCount && firstDate)) return next(ApiError.badRequest('Обязательный параметр lessonsCount или firstDate не указан'));
+      if (lastDate && !(lastDate && firstDate)) return next(ApiError.badRequest('Обязательный параметр lastDate или firstDate не указан'));
 
       lessonService.checkTeacherInterger(teacherIds, next);
 
@@ -27,28 +27,21 @@ class StudentController {
       }
 
       let lessons = null;
-
+      // create lessons range date
       if (lessonsCount && firstDate) {
-        const dates = lessonService.getDatesRange(lessonsCount, firstDate, days);  
-        lessons = await Promise.all(
-          dates.map(async date => {
-            const lesson = await lessonService.create(date, title)
-            return lesson.id;
-          })
-        );
-        // console.log(lessons);
-        // await Promise.all(
-          lessons.forEach(lesson => {
-            teacherIds.forEach(async teacherId => await lessonTeacherService.create(lesson, teacherId))
-          })
-        // )
-      } else if (lastDate && firstDate) {
+        const dates = lessonService.getDatesRangeByCountLessons(lessonsCount, firstDate, days);  
+        lessons = await createLessons(dates, title, teacherIds, res);
 
+        return res.json({count: lessons.length, lessons})
+      // create lessons firstDate to lastDate
+      } else if (lastDate && firstDate) {
+        const dates = lessonService.getDatesRange(firstDate, lastDate, days);
+        lessons = await createLessons(dates, title, teacherIds, res);
+
+        return res.json({count: lessons.length, lessons})
       }
 
-      // const lesson = await lessonService.create(date, title, status);
-
-      return res.json({count: lessons.length, lessons})
+      return res.json({message: 'Ничего не создано'});
     } catch (error) {
       return next(ApiError.internal(error.message));
     }
@@ -70,6 +63,22 @@ class StudentController {
       next(ApiError.internal(error.message));
     }
   }
+
 }  
 
 module.exports = new StudentController();
+
+async function createLessons(dates, title, teacherIds, res) {
+  if (dates.length === 0) return res.json({ message: 'Нет доступных дат для создания уроков' });
+  const lessons = await Promise.all(
+    dates.map(async date => {
+      const lesson = await lessonService.create(date, title)
+      return lesson.id;
+    })
+  );
+  lessons.forEach(lesson => {
+    teacherIds.forEach(async teacherId => await lessonTeacherService.create(lesson, teacherId))
+  })
+  
+  return lessons;
+}
