@@ -11,10 +11,10 @@ const Lesson_students = sequelize.define('lesson_students', {
     }
 })
 
-Student.hasMany(Lesson_students);
-Lesson_students.belongsTo(Student);
+Student.hasMany(Lesson_students, {foreignKey : 'id'});
+Lesson_students.belongsTo(Student, {foreignKey : 'student_id'});
 
-Lessons.hasMany(Lesson_students);
-Lesson_students.belongsTo(Lessons);
+Lessons.hasMany(Lesson_students, {foreignKey : 'id'});
+Lesson_students.belongsTo(Lessons, {foreignKey : 'lesson_id'});
 
 module.exports = Lesson_students;

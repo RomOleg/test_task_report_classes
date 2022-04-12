@@ -20,7 +20,7 @@ class LessonService {
         if (date) where.date = moment.utc(date);
         if (status) where.status = status;
 
-        if (teacherId) whereTeacher.teacherId = teacherId.split(',');
+        if (teacherId) whereTeacher.teacher_id = teacherId.split(',');
         
         let lesson = await Lesson.findAndCountAll({
             where: {
